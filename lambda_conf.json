@@ -1,0 +1,11 @@
+{
+    "lambda_conf":
+    {
+        "Runtime":"python3.7",
+        "Role":"role_arn",
+        "Handler":"string",
+        "ZipFile": "string",
+        "Timeout":123,
+        "MemorySize":123
+    }
+}
