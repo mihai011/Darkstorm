@@ -2,10 +2,9 @@
     "lambda_conf":
     {
         "Runtime":"python3.7",
-        "Role":"role_arn",
-        "Handler":"string",
-        "ZipFile": "string",
+        "Role":"arn:aws:iam::043301319542:role/LambdaRole",
+        "Handler":"main.handler",
         "Timeout":10,
-        "MemorySize":123
+        "MemorySize":128
     }
 }
