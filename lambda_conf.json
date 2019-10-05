@@ -5,7 +5,7 @@
         "Role":"role_arn",
         "Handler":"string",
         "ZipFile": "string",
-        "Timeout":123,
+        "Timeout":10,
         "MemorySize":123
     }
 }
