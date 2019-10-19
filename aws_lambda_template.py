@@ -2,9 +2,8 @@ import boto3
 import logging
 import json
 
-
+logging.basicConfig(level=0, format='%(message)s')
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 def make_log(msg_type, message):
 

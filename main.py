@@ -1,12 +1,14 @@
 import json
 import zipfile
 import os
+import sys
 
 import boto3
 import botocore
-import logging
 
 from botocore.exceptions import ClientError
+
+from utils import detect_cycles, make_log
 
 def show_banner(file):
 
@@ -30,6 +32,16 @@ def read_configuration(path):
         all_functions_recv += fset
     
     functions = set(functions_send + all_functions_recv)
+    
+    #detect cycles
+    visited_journal = {f:False for f in functions}
+    cycles = detect_cycles(trigger_function, connections, visited_journal)
+
+    if cycles:
+        make_log("critical", "Configurations contains cycles")
+        sys.exit(0)
+    else:
+       make_log("info","Configurations does not contain cycles")
 
     return connections, functions, trigger_function
 
@@ -77,22 +89,22 @@ def create_lambda(client, function_name, conf):
 
     try:
         res = client.create_function(**conf)
-        logging.info(res)
+        make_log("info", "Function '{}' called with status:{}".format("create_function", res["ResponseMetadata"]["HTTPStatusCode"]))
     except ClientError as e:
-        logging.error(e)
+        make_log("error", e)
 
 
 def call_function(client, function_name, event):
     
     res = client.invoke(FunctionName=function_name,\
          InvocationType = "Event")
-    logging.info(res)
+    make_log("info", "Function '{}' called with status:{}".format("invoke",res["StatusCode"]))
 
 def main(template_path, configuration_path, lambda_conf_path):
 
     connections, functions, trigger_function = read_configuration("conf.json")
     lambda_conf = read_lambda_conf("lambda_conf.json")
-    print("Configurations read!")
+    make_log("info","Configurations read!")
 
     #deletes previous versions and create lambda functions 
     client = boto3.client('lambda')
@@ -101,15 +113,13 @@ def main(template_path, configuration_path, lambda_conf_path):
         precreate_lambda(template_path, function_name, connections)
         create_lambda(client, function_name, lambda_conf)
     
-    print("Functions created!")
-    logging.info("Functions created!")
+    make_log("info","Functions created!")
 
     #invoke lambda
     event = {}
     call_function(client, trigger_function, event)
 
-    print("Trigger function called!")
-    logging.info("Trigger function called!")
+    make_log("info", "Trigger function called!")
     
 if __name__ == "__main__":
 
