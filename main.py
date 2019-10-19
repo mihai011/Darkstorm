@@ -58,6 +58,7 @@ def precreate_lambda(template, function_name, connections):
         cell = {}
         cell["connections"] = connections[function_name]
         f.write(json.dumps(cell))
+        
     zip.write(connection_file, os.path.basename(connection_file))
     zip.close()
 
