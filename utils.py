@@ -36,7 +36,7 @@ def detect_cycles(start, connections, visited_journal):
             return True
 
     
-    visited_journal[connection] = False
+    visited_journal[start] = False
     return False
 
 

@@ -106,7 +106,7 @@ venv.bak/
 
 #configuration jsons
 *.json
-conf.json
+
 #archives
 *.zip
 
