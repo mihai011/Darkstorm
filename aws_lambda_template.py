@@ -37,5 +37,5 @@ def handler(event, context):
     for function in connections:
         client.invoke(FunctionName=function,\
         InvocationType="Event")
-        make_log("error", "{} {} ".format(function, "called"))
+        make_log("info", "{} {} ".format(function, "called"))
 
