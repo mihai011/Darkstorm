@@ -38,10 +38,10 @@ def read_configuration(path):
     cycles = detect_cycles(trigger_function, connections, visited_journal)
 
     if cycles:
-        make_log("critical", "Configurations contains cycles")
+        make_log("critical", "Configuration contains cycles")
         sys.exit(0)
     else:
-       make_log("info","Configurations does not contain cycles")
+        make_log("info","Configurations does not contain cycles")
 
     return connections, functions, trigger_function
 

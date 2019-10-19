@@ -29,7 +29,7 @@ def detect_cycles(start, connections, visited_journal):
     visited_journal[start] = True
 
     for connection in first_connections:
-        if connections[connection] == False:
+        if visited_journal[connection] == False:
             if detect_cycles(connection, connections, visited_journal) == True:
                 return True
         elif visited_journal[connection] == True:
