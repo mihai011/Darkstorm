@@ -2,6 +2,7 @@ import json
 import zipfile
 import os
 import sys
+import uuid
 
 import boto3
 import botocore
@@ -51,6 +52,33 @@ def read_lambda_conf(path):
         data = json.loads(f.read())
 
     return data["lambda_conf"]
+
+def read_layers(path):
+
+    with open(path) as f:
+        data = json.loads(f.read())
+
+    layers = data["layers"]
+
+    dimension_chain = []
+    for layer in layers:
+        if layer[0] == "fully_connected":
+            dimension_chain += layer[1:3]
+
+    #check dimensions
+    common_dimensions = dimension_chain[1:-1]
+    interior_distance = []
+    for i in range(0, len(common_dimensions), 2):
+        if common_dimensions[i] != common_dimensions[i+1]:
+            make_log("critical", "Error in layer dimensions")
+            sys.exit(0)
+        else:
+            interior_distance.append(common_dimensions[i])
+
+    interior_distance.insert(0, dimension_chain[0])
+    interior_distance.append(dimension_chain[-1])
+
+    return interior_distance
 
 def precreate_lambda(template, function_name, connections):
 
@@ -128,5 +156,11 @@ if __name__ == "__main__":
     template_path = "aws_lambda_template.py"
     configuration_path = "conf.json"
     lambda_conf_path = "lambda_conf_path.json"
+
+    layers = read_layers("layers_conf.json")
+
+    #create lower level configurations
+
+    
 
     main(template_path, configuration_path, lambda_conf_path)
