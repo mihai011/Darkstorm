@@ -16,6 +16,33 @@ def show_banner(file):
     with open(file) as f:
         print(f.read())
 
+def write_configuration(layers, path):
+
+    all_functions = []
+    structure = {}
+    for i in range(len(layers)):
+        structure[i] = []
+        for j in range(layers[i]):
+            id = str(uuid.uuid4())
+            structure[i].append(id)
+            all_functions.append(id)
+
+    conf = {}
+    conf["trigger_functions"] = structure[0]
+
+    conf["configuration"] = {f:[] for f in all_functions}
+
+    for key in structure.keys():
+        for f in structure[key]:
+            if key+1 not in structure:
+                conf["configuration"][f] = []
+            else:
+                conf["configuration"][f] = structure[key+1]
+
+    with open(path, 'w') as f:
+        f.write(json.dumps(conf, indent=4))
+        
+
 def read_configuration(path):
 
     with open(path) as f:
@@ -23,7 +50,7 @@ def read_configuration(path):
 
     #get functions names
     connections = data["configuration"]
-    trigger_function = data["trigger_function"]
+    trigger_functions = data["trigger_functions"]
 
     functions_send = list(connections.keys())
 
@@ -36,15 +63,17 @@ def read_configuration(path):
     
     #detect cycles
     visited_journal = {f:False for f in functions}
-    cycles = detect_cycles(trigger_function, connections, visited_journal)
+    cycles = []
+    for trigger_function in trigger_functions:
+        cycles.append(detect_cycles(trigger_function, connections, visited_journal))
 
-    if cycles:
+    if True in cycles:
         make_log("critical", "Configuration contains cycles")
         sys.exit(0)
     else:
         make_log("info","Configurations does not contain cycles")
 
-    return connections, functions, trigger_function
+    return connections, functions, trigger_functions
 
 def read_lambda_conf(path):
 
@@ -117,7 +146,8 @@ def create_lambda(client, function_name, conf):
 
     try:
         res = client.create_function(**conf)
-        make_log("info", "Function '{}' called with status:{}".format("create_function", res["ResponseMetadata"]["HTTPStatusCode"]))
+        make_log("info", "Function '{}' called with status:{}".format(function_name, res["ResponseMetadata"]["HTTPStatusCode"]))
+        os.remove("{}.zip".format(function_name))
     except ClientError as e:
         make_log("error", e)
 
@@ -130,7 +160,7 @@ def call_function(client, function_name, event):
 
 def main(template_path, configuration_path, lambda_conf_path):
 
-    connections, functions, trigger_function = read_configuration("conf.json")
+    connections, functions, trigger_functions = read_configuration("conf.json")
     lambda_conf = read_lambda_conf("lambda_conf.json")
     make_log("info","Configurations read!")
 
@@ -145,9 +175,10 @@ def main(template_path, configuration_path, lambda_conf_path):
 
     #invoke lambda
     event = {}
-    call_function(client, trigger_function, event)
+    for trigger_function in trigger_functions:
+        call_function(client, trigger_function, event)
 
-    make_log("info", "Trigger function called!")
+    make_log("info", "Trigger functions called!")
     
 if __name__ == "__main__":
 
@@ -161,6 +192,7 @@ if __name__ == "__main__":
 
     #create lower level configurations
 
+    write_configuration(layers, configuration_path)
     
 
     main(template_path, configuration_path, lambda_conf_path)
