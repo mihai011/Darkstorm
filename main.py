@@ -62,6 +62,7 @@ def read_configuration(path):
     functions = set(functions_send + all_functions_recv)
     
     #detect cycles
+    """
     visited_journal = {f:False for f in functions}
     cycles = []
     for trigger_function in trigger_functions:
@@ -72,7 +73,7 @@ def read_configuration(path):
         sys.exit(0)
     else:
         make_log("info","Configurations does not contain cycles")
-
+    """
     return connections, functions, trigger_functions
 
 def read_lambda_conf(path):
