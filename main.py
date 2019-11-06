@@ -3,13 +3,15 @@ import zipfile
 import os
 import sys
 import uuid
+import argparse
 
 import boto3
 import botocore
 
 from botocore.exceptions import ClientError
 
-from utils import detect_cycles, make_log
+from utils import *
+
 
 def show_banner(file):
 
@@ -183,13 +185,16 @@ def main(template_path, configuration_path, lambda_conf_path):
     
 if __name__ == "__main__":
 
+    parser = create_parser()
+
     show_banner("banner.txt")
 
-    template_path = "aws_lambda_template.py"
-    configuration_path = "conf.json"
-    lambda_conf_path = "lambda_conf_path.json"
+    template_path = args.lambda_template
+    configuration_path = args.conf_global
+    lambda_conf_path = args.lambda_conf
+    layers_conf = args.layers_conf
 
-    layers = read_layers("layers_conf.json")
+    layers = read_layers(layers_conf)
 
     #create lower level configurations
 
