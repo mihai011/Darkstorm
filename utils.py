@@ -23,7 +23,7 @@ def make_log(msg_type, message):
         logger.critical(message)
 
 
-def detect_cycles(start, connections, visited_journal):
+def check_cycles(start, connections, visited_journal):
 
 
     first_connections = connections[start]
@@ -31,7 +31,7 @@ def detect_cycles(start, connections, visited_journal):
 
     for connection in first_connections:
         if visited_journal[connection] == False:
-            if detect_cycles(connection, connections, visited_journal) == True:
+            if check_cycles(connection, connections, visited_journal) == True:
                 return True
         elif visited_journal[connection] == True:
             return True
@@ -40,17 +40,23 @@ def detect_cycles(start, connections, visited_journal):
     visited_journal[start] = False
     return False
 
-def create_parser()
+def create_parser():
 
     parser = argparse.ArgumentParser(description='Get data required by the program. ')
     
-    parser.add_argument('--layers_conf',dest='layers_conf', type=str,
+    parser.add_argument('--layers-conf',dest='layers_conf_path', type=str,
                         help='layers configuration')
-    parser.add_argument('--lambda_conf', dest='lambda_conf',type=str,
+
+    parser.add_argument('--lambda-conf', dest='lambda_conf_path',type=str,
                     help='lambda fuction configuration')
 
-    parser.add_argument('--lambda_template', dest='lambda_template',type=str,
+    parser.add_argument('--lambda-template', dest='lambda_template_path',type=str,
                     help='template that represents code that is executed by the lambda')
 
+    parser.add_argument('--check-cycles', dest='check_cycles',type=bool,
+                    help='check for cycles in the structure')
 
-    return parser
+    parser.add_argument('--conf-global', dest='conf_global_path',type=str,
+                    help='configuration file for full structure')
+
+    return parser.parse_args()

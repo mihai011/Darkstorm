@@ -45,7 +45,7 @@ def write_configuration(layers, path):
         f.write(json.dumps(conf, indent=4))
         
 
-def read_configuration(path):
+def read_configuration(path, detect_cycles):
 
     with open(path) as f:
         data = json.loads(f.read())
@@ -64,18 +64,19 @@ def read_configuration(path):
     functions = set(functions_send + all_functions_recv)
     
     #detect cycles
-    """
-    visited_journal = {f:False for f in functions}
-    cycles = []
-    for trigger_function in trigger_functions:
-        cycles.append(detect_cycles(trigger_function, connections, visited_journal))
+    if detect_cycles:
+        
+        visited_journal = {f:False for f in functions}
+        cycles = []
+        for trigger_function in trigger_functions:
+            cycles.append(check_cycles(trigger_function, connections, visited_journal))
 
-    if True in cycles:
-        make_log("critical", "Configuration contains cycles")
-        sys.exit(0)
-    else:
-        make_log("info","Configurations does not contain cycles")
-    """
+        if True in cycles:
+            make_log("critical", "Configuration contains cycles")
+            sys.exit(0)
+        else:
+            make_log("info","Configurations does not contain cycles")
+        
     return connections, functions, trigger_functions
 
 def read_lambda_conf(path):
@@ -161,10 +162,10 @@ def call_function(client, function_name, event):
          InvocationType = "Event")
     make_log("info", "Function '{}' called with status:{}".format("invoke",res["StatusCode"]))
 
-def main(template_path, configuration_path, lambda_conf_path):
+def main(template_path, configuration_path, lambda_conf_path, check_cycles):
 
-    connections, functions, trigger_functions = read_configuration("conf.json")
-    lambda_conf = read_lambda_conf("lambda_conf.json")
+    connections, functions, trigger_functions = read_configuration(configuration_path, detect_cycles)
+    lambda_conf = read_lambda_conf(lambda_conf_path)
     make_log("info","Configurations read!")
 
     #deletes previous versions and create lambda functions 
@@ -189,16 +190,16 @@ if __name__ == "__main__":
 
     show_banner("banner.txt")
 
-    template_path = args.lambda_template
-    configuration_path = args.conf_global
-    lambda_conf_path = args.lambda_conf
-    layers_conf = args.layers_conf
+    template_path = parser.lambda_template_path
+    configuration_path = parser.conf_global_path
+    lambda_conf_path = parser.lambda_conf_path
+    layers_conf_path = parser.layers_conf_path
 
-    layers = read_layers(layers_conf)
+    detect_cycles = parser.check_cycles
+
+    layers = read_layers(layers_conf_path)
 
     #create lower level configurations
-
     write_configuration(layers, configuration_path)
-    
-
-    main(template_path, configuration_path, lambda_conf_path)
+    #start the full process
+    main(template_path, configuration_path, lambda_conf_path, detect_cycles)
