@@ -18,7 +18,7 @@ def show_banner(file):
     with open(file) as f:
         print(f.read())
 
-def write_configuration(layers, path):
+def write_configuration_layers(layers, path):
 
     all_functions = []
     structure = {}
@@ -40,6 +40,28 @@ def write_configuration(layers, path):
                 conf["configuration"][f] = []
             else:
                 conf["configuration"][f] = structure[key+1]
+
+    with open(path, 'w') as f:
+        f.write(json.dumps(conf, indent=4))
+
+
+def write_configuration_matrix(matrix, path):
+
+    all_functions = []
+    func_enc = {}
+    for i in range(len(matrix)):
+        func_enc[i] = str(uuid.uuid4())
+
+    conf = {}
+    conf["trigger_functions"] = [func_enc[0]]
+
+    conf["configuration"] = {f:[] for f in all_functions}
+
+    for i in range(len(matrix)):
+        conf["configuration"][func_enc[i]] = []
+        for j in range(len(matrix[i])):
+            conf["configuration"][func_enc[i]].append(func_enc[j])
+
 
     with open(path, 'w') as f:
         f.write(json.dumps(conf, indent=4))
@@ -113,6 +135,29 @@ def read_layers(path):
 
     return interior_distance
 
+def read_matrix(path):
+
+    with open(path) as f:
+        data = json.loads(f.read())
+
+    matrix = data["matrix"]
+
+    if len(matrix) != len(matrix[0]):
+        make_log("critical","Matrix is not square!")
+        sys.exit(0) 
+
+    data_matrix = {}
+
+    for i in range(len(matrix)):
+        data_matrix[i] = []
+        for j in range(len(matrix)):
+            if matrix[i][j] == 1:
+                data_matrix[i].append(j)
+
+    return data_matrix 
+
+
+
 def precreate_lambda(template, function_name, connections):
 
     archive_name = "{}.zip".format(function_name)
@@ -157,7 +202,6 @@ def create_lambda(client, function_name, conf):
 
 
 def call_function(client, function_name, event):
-    
     res = client.invoke(FunctionName=function_name,\
          InvocationType = "Event")
     make_log("info", "Function '{}' called with status:{}".format("invoke",res["StatusCode"]))
@@ -194,12 +238,23 @@ if __name__ == "__main__":
     configuration_path = parser.conf_global_path
     lambda_conf_path = parser.lambda_conf_path
     layers_conf_path = parser.layers_conf_path
+    matrix_conf_path = parser.matrix_conf_path
+
+    if matrix_conf_path and layers_conf_path:
+        make_log("critical", "Cannot continue: Please select only network or graph structure!")
+        sys.exit(0)
 
     detect_cycles = parser.check_cycles
 
-    layers = read_layers(layers_conf_path)
+    
+    if layers_conf_path:
+        structure = read_layers(layers_conf_path)
+        write_configuration_layers(structure, configuration_path)
+       
 
-    #create lower level configurations
-    write_configuration(layers, configuration_path)
-    #start the full process
+    if matrix_conf_path:
+        structure = read_matrix(matrix_conf_path)
+        write_configuration_matrix(structure, configuration_path)
+        
     main(template_path, configuration_path, lambda_conf_path, detect_cycles)
+   

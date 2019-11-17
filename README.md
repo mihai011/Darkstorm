@@ -4,4 +4,5 @@
 
 Connected AWS Lambdas for the future.
 
-Framework meant to substitute the StepFunctions service in AWS and more.
+Framework meant to make experimenting with lambdas fun.
+
