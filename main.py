@@ -246,6 +246,11 @@ if __name__ == "__main__":
 
     detect_cycles = parser.check_cycles
 
+    if detect_cycles == "True":
+        detect_cycles = True
+    else:
+        detect_cycles = False
+
     
     if layers_conf_path:
         structure = read_layers(layers_conf_path)
