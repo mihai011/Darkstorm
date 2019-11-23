@@ -32,6 +32,10 @@ def handler(event, context):
 
     connections = connections["connections"]
 
+    """
+    Your code here.
+    """
+
     client = boto3.client('lambda')
 
     for function in connections:

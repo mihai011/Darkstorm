@@ -44,7 +44,7 @@ def create_parser():
 
     parser = argparse.ArgumentParser(description='Get data required by the program. ')
     
-    parser.add_argument('--layers-conf',dest='layers_conf_path', type=str,
+    parser.add_argument('--layers-conf-path',dest='layers_conf_path', type=str,
                         help='layers configuration for a neural net')
 
     parser.add_argument('--lambda-conf', dest='lambda_conf_path',type=str,
