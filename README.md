@@ -111,6 +111,8 @@ You must have AWS credentials configured in your system. Preferably in the .aws 
 
 Abusive usage with high number of lambdas and without cycle check can lead to massive AWS bills.
 
+To delete the lambdas and their attached logs execute delete_log_groups.log' and 'delete_lambdas.py' scripts.
+
 ## License
 
 No license attached.

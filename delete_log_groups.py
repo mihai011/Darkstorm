@@ -27,5 +27,4 @@ def delete_log_streams():
             if not next_token or len(log_streams['logStreams']) == 0:
                 break
 
-
 delete_log_streams()
