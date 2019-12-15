@@ -113,6 +113,11 @@ Abusive usage with high number of lambdas and without cycle check can lead to ma
 
 To delete the lambdas and their attached logs execute delete_log_groups.log' and 'delete_lambdas.py' scripts.
 
+
+## Journal Security
+
+Began modifying this tool for penetration testing purposes, involving machine learning techniques.
+
 ## License
 
 No license attached.
